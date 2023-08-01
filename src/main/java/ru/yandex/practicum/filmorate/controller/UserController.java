@@ -9,10 +9,11 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 import java.util.*;
 
-@RestController
 @RequestMapping("/users")
+@RestController
 public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
+
     private HashMap<Integer, User> users = new HashMap<>();
     private int currentId = 1;
 
@@ -30,7 +31,7 @@ public class UserController {
             currentId += 1;
             return user;
         } else {
-            return user;
+            throw new ValidationException("Введены неверные данные пользователя");
         }
     }
 
@@ -80,3 +81,5 @@ public class UserController {
         return true;
     }
 }
+
+
