@@ -29,12 +29,8 @@ public class FilmController {
             films.put(currentId, film);
             film.setId(currentId);
             currentId += 1;
-            return film;
-        } else {
-            return film;
         }
-
-
+        return film;
     }
 
     @PutMapping
