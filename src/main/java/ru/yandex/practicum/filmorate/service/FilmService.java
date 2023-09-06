@@ -76,7 +76,7 @@ public class FilmService {
         film.removeLike(user);
         return film;
     }
-    
+
     public List<Film> getMostPopularFilms(Integer count) {
         return filmStorage.getAll().stream()
                 .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
