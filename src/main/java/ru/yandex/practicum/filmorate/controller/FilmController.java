@@ -18,7 +18,7 @@ import java.util.Map;
 @RequestMapping("/films")
 public class FilmController {
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
-    private FilmService filmService;
+    private final FilmService filmService;
 
     @Autowired
     public FilmController(FilmService filmService) {
