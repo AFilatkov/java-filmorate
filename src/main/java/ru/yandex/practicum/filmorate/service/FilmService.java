@@ -39,7 +39,7 @@ public class FilmService {
         return film;
     }
 
-    public Film getFilm(Integer id) throws NotFound, ValidationException {
+    public Film getFilm(Integer id) throws NotFound {
         return filmStorage.getFilm(id);
     }
 
@@ -63,7 +63,7 @@ public class FilmService {
         return filmStorage.getAll();
     }
 
-    public Film addLike(Integer filmId, Integer userId) throws NotFound, ValidationException {
+    public Film addLike(Integer filmId, Integer userId) throws NotFound {
         Film film = filmStorage.getFilm(filmId);
         User user = userStorage.getUser(userId);
         film.addLike(user);
@@ -76,13 +76,11 @@ public class FilmService {
         film.removeLike(user);
         return film;
     }
-// поправить порядок сортировки
     public List<Film> getMostPopularFilms(Integer count) {
-        List<Film> result = filmStorage.getAll().stream()
+        return filmStorage.getAll().stream()
                 .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
                 .limit(count)
                 .collect(Collectors.toList());
-        return result;
     }
 
     private boolean validateFilm(Film film) throws ValidationException {
