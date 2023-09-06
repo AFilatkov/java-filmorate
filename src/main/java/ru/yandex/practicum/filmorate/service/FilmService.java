@@ -26,9 +26,9 @@ public class FilmService {
     private static final Logger log = LoggerFactory.getLogger(FilmService.class);
 
     @Autowired
-    public FilmService(InMemoryFilmStorage inMemoryFilmStorage, InMemoryUserStorage inMemoryUserStorage) {
-        this.filmStorage = inMemoryFilmStorage;
-        this.userStorage = inMemoryUserStorage;
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
     }
 
     public Film add(Film film) throws ValidationException {
