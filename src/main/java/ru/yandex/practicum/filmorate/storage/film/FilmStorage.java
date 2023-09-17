@@ -8,8 +8,12 @@ import java.util.Collection;
 
 public interface FilmStorage {
     Film add(Film film) throws ValidationException;
+
     Film update(Film film) throws NotFound;
+
     Film remove(Film film) throws NotFound;
+
     Collection<Film> getAll();
+
     Film getFilm(Integer id) throws NotFound;
 }
