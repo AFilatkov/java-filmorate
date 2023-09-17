@@ -10,7 +10,7 @@ public interface UserStorage {
     User add(User user) throws ValidationException;
 
     User update(User user) throws NotFound;
-    
+
     User remove(User user) throws NotFound;
 
     User getUser(Integer id) throws NotFound;
