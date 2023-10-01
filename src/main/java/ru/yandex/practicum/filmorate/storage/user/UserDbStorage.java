@@ -57,8 +57,7 @@ public class UserDbStorage implements UserStorage {
                     user.getId());
             if (responseCode != 0) {
                 return user;
-            }
-            else {
+            } else {
                 throw new NotFound("Данные о пользователе в базе не найдены");
             }
         } catch (DataAccessException e) {
