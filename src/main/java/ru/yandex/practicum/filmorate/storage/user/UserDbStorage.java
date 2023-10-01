@@ -55,10 +55,12 @@ public class UserDbStorage implements UserStorage {
                     user.getEmail(),
                     user.getBirthday(),
                     user.getId());
-            if (responseCode != 0)
+            if (responseCode != 0) {
                 return user;
-            else
+            }
+            else {
                 throw new NotFound("Данные о пользователе в базе не найдены");
+            }
         } catch (DataAccessException e) {
             throw new NotFound("Данные о пользователе в базе не найдены");
         }
@@ -124,11 +126,11 @@ public class UserDbStorage implements UserStorage {
         String sqlCommonFriends = "select * from users where user_id in (" +
                 "select friend_id from friends where user_id=?) and " +
                 "user_id in (select friend_id from friends where user_id=?)";
-       try {
-           return jdbcTemplate.query(sqlCommonFriends, (rs, rowNum) -> makeUser(rs), id1, id2);
-       } catch (DataAccessException e) {
-           throw new NotFound("Указан неправильный идентификатор при получении списка общих друзей");
-       }
+        try {
+            return jdbcTemplate.query(sqlCommonFriends, (rs, rowNum) -> makeUser(rs), id1, id2);
+        } catch (DataAccessException e) {
+            throw new NotFound("Указан неправильный идентификатор при получении списка общих друзей");
+        }
     }
 
     @Override

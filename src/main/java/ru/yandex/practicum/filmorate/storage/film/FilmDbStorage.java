@@ -12,13 +12,13 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.sql.*;
 import java.sql.Date;
+import java.sql.*;
 import java.util.*;
 
 @Component
 @Qualifier("testFilmDb")
-public class FilmDbStorage implements FilmStorage{
+public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -62,9 +62,9 @@ public class FilmDbStorage implements FilmStorage{
                 swapGenres.addAll(film.getGenres());
                 film.setGenres(swapGenres);
                 return film;
-            }
-            else
+            } else {
                 throw new NotFound("Не правильные данные о фильме");
+            }
         } catch (DataAccessException e) {
             throw new NotFound("Не правильные данные о фильме");
         }
@@ -122,10 +122,11 @@ public class FilmDbStorage implements FilmStorage{
         String sqlRemoveLike = "delete from film_likes where film_id=? and user_id=?";
         try {
             int responseCode = jdbcTemplate.update(sqlRemoveLike, id, userId);
-            if (responseCode != 0)
+            if (responseCode != 0) {
                 return true;
-            else
+            } else {
                 throw new NotFound("При удалении лайка указаны неправильные идентификаторы");
+            }
         } catch (DataAccessException e) {
             throw new NotFound("При удалении лайка указаны неправильные идентификаторы");
         }
@@ -159,7 +160,7 @@ public class FilmDbStorage implements FilmStorage{
     private boolean updateFilmGenre(Film film) {
         jdbcTemplate.update("delete from film_genre where film_id=?", film.getId());
         String sqlAddFilmGenre = "insert into film_genre(film_id, genre_id) values(?, ?)";
-        for (Genre genre: film.getGenres()) {
+        for (Genre genre : film.getGenres()) {
             jdbcTemplate.update(sqlAddFilmGenre, film.getId(), genre.getId());
         }
         return true;
