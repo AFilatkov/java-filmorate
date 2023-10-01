@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFound;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -19,11 +20,11 @@ public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("testUserDb") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
-    public User add(User user) throws ValidationException {
+    public User add(User user) throws ValidationException, NotFound {
         if (validateUser(user)) {
             log.debug("Добавление пользователя - {}", user);
             return userStorage.add(user);
@@ -32,7 +33,7 @@ public class UserService {
         }
     }
 
-    public Collection<User> getAll() {
+    public Collection<User> getAll() throws NotFound {
         return userStorage.getAll();
     }
 
@@ -59,43 +60,19 @@ public class UserService {
     }
 
     public boolean addFriend(Integer id1, Integer id2) throws NotFound {
-        boolean result = true;
-        User user1 = userStorage.getUser(id1);
-        User user2 = userStorage.getUser(id2);
-        user1.addFriend(user2);
-        user2.addFriend(user1);
-
-        return result;
+        return userStorage.addFriend(id1, id2);
     }
 
     public boolean removeFriend(Integer id1, Integer id2) throws NotFound {
-        User user1 = userStorage.getUser(id1);
-        User user2 = userStorage.getUser(id2);
-        return user1.removeFriend(user2) && user2.removeFriend(user1);
+        return userStorage.removeFriend(id1, id2);
     }
 
-    public List<User> getFriends(Integer userId) throws NotFound {
-        return userStorage.getUser(userId).getFriends().stream()
-                .map(i -> {
-                    try {
-                        return userStorage.getUser(i);
-                    } catch (NotFound e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .collect(Collectors.toList());
+    public Collection<User> getFriends(Integer userId) throws NotFound {
+        return userStorage.getFriends(userId);
     }
 
-    public List<User> commonFriends(Integer id1, Integer id2) throws NotFound {
-        Set<Integer> result = new HashSet<>(userStorage.getUser(id1).getFriends());
-        result.retainAll(userStorage.getUser(id2).getFriends());
-        return result.stream().map(currentId -> {
-            try {
-                return userStorage.getUser(currentId);
-            } catch (NotFound e) {
-                throw new RuntimeException(e);
-            }
-        }).collect(Collectors.toList());
+    public Collection<User> commonFriends(Integer id1, Integer id2) throws NotFound {
+        return userStorage.getCommonFriends(id1, id2);
     }
 
     private boolean validateUser(User user) throws ValidationException {

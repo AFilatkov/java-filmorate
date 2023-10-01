@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFound;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -20,13 +21,11 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
     private static final Logger log = LoggerFactory.getLogger(FilmService.class);
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(@Qualifier("testFilmDb") FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
     }
 
     public Film add(Film film) throws ValidationException {
@@ -61,25 +60,16 @@ public class FilmService {
         return filmStorage.getAll();
     }
 
-    public Film addLike(Integer filmId, Integer userId) throws NotFound {
-        Film film = filmStorage.getFilm(filmId);
-        User user = userStorage.getUser(userId);
-        film.addLike(user);
-        return film;
+    public boolean addLike(Integer filmId, Integer userId) throws NotFound {
+        return filmStorage.addLike(filmId, userId);
     }
 
-    public Film removeLike(Integer filmId, Integer userId) throws NotFound {
-        Film film = filmStorage.getFilm(filmId);
-        User user = userStorage.getUser(userId);
-        film.removeLike(user);
-        return film;
+    public boolean removeLike(Integer filmId, Integer userId) throws NotFound {
+        return filmStorage.removeLike(filmId, userId);
     }
 
-    public List<Film> getMostPopularFilms(Integer count) {
-        return filmStorage.getAll().stream()
-                .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
+    public Collection<Film> getMostPopularFilms(Integer count) {
+        return filmStorage.getMostPopularFilms(count);
     }
 
     private boolean validateFilm(Film film) throws ValidationException {

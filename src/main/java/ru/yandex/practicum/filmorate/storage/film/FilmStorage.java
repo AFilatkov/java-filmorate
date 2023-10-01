@@ -16,4 +16,10 @@ public interface FilmStorage {
     Collection<Film> getAll();
 
     Film getFilm(Integer id) throws NotFound;
+
+    boolean addLike(Integer id, Integer userId) throws NotFound;
+
+    boolean removeLike(Integer id, Integer userId) throws NotFound;
+
+    Collection<Film> getMostPopularFilms(Integer count);
 }

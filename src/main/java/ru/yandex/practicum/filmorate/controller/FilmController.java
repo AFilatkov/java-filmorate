@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -48,17 +47,17 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public Film addLike(@PathVariable Integer id, @PathVariable Integer userId) throws NotFound {
+    public boolean addLike(@PathVariable Integer id, @PathVariable Integer userId) throws NotFound {
         return filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public Film removeLike(@PathVariable Integer id, @PathVariable Integer userId) throws NotFound {
+    public boolean removeLike(@PathVariable Integer id, @PathVariable Integer userId) throws NotFound {
         return filmService.removeLike(id, userId);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopular(@RequestParam(name = "count", defaultValue = "10") String count) {
+    public Collection<Film> getPopular(@RequestParam(name = "count", defaultValue = "10") String count) {
         return filmService.getMostPopularFilms(Integer.parseInt(count));
     }
 

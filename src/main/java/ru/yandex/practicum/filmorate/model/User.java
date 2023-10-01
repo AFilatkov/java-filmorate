@@ -12,6 +12,7 @@ public class User {
     private String name;
     private LocalDate birthday;
 
+    private Set<Integer> likedFilms = new HashSet<>();
     private Set<Integer> friends = new LinkedHashSet<>();
 
     public Set<Integer> getFriends() {
