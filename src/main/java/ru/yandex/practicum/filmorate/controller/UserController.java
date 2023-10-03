@@ -39,7 +39,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public User getUser(@PathVariable Integer id) throws NotFound {
-        return userService.getUser(id);
+        return userService.get(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

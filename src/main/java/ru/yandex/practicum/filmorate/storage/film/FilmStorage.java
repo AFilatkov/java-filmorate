@@ -15,7 +15,7 @@ public interface FilmStorage {
 
     Collection<Film> getAll();
 
-    Film getFilm(Integer id) throws NotFound;
+    Film get(Integer id) throws NotFound;
 
     boolean addLike(Integer id, Integer userId) throws NotFound;
 

@@ -13,7 +13,7 @@ public interface UserStorage {
 
     User remove(User user) throws NotFound;
 
-    User getUser(Integer id) throws NotFound;
+    User get(Integer id) throws NotFound;
 
     boolean addFriend(Integer id1, Integer id2) throws NotFound;
 

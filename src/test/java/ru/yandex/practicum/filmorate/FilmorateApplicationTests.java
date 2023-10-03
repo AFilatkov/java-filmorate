@@ -140,7 +140,7 @@ class FilmorateApplicationTests {
         Collection<Film> films = filmStorage.getAll();
         assertThat(films).hasSize(1);
 
-        Film testGetFilmById = filmStorage.getFilm(1);
+        Film testGetFilmById = filmStorage.get(1);
         assertThat(testGetFilmById).isNotNull()
                 .hasFieldOrPropertyWithValue("id", 1);
 

@@ -43,7 +43,7 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public Film gitFilm(@PathVariable Integer id) throws NotFound {
-        return filmService.getFilm(id);
+        return filmService.get(id);
     }
 
     @PutMapping("/{id}/like/{userId}")

@@ -16,13 +16,13 @@ public class Film {
     private Set<Genre> genres = new TreeSet<>(Comparator.comparingInt(Genre::getId));
     private Set<Integer> likes = new HashSet<>();
 
-    public boolean addLike(User user) {
-        likes.add(user.getId());
+    public boolean addLike(Integer userId) {
+        likes.add(userId);
         return true;
     }
 
-    public boolean removeLike(User user) {
-        return likes.remove(user.getId());
+    public boolean removeLike(Integer userId) {
+        return likes.remove(userId);
     }
 
     public Set<Integer> getLikes() {

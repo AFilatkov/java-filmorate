@@ -21,7 +21,7 @@ public class InMemoryUserStorage implements UserStorage {
     private Integer currentId = 1;
 
     @Override
-    public User getUser(Integer id) throws NotFound {
+    public User get(Integer id) throws NotFound {
         if (users.containsKey(id)) {
             return users.get(id);
         } else {
@@ -60,8 +60,8 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public boolean addFriend(Integer id1, Integer id2) throws NotFound {
         boolean result = true;
-        User user1 = getUser(id1);
-        User user2 = getUser(id2);
+        User user1 = get(id1);
+        User user2 = get(id2);
         user1.addFriend(user2);
         user2.addFriend(user1);
         return result;
@@ -69,17 +69,17 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public boolean removeFriend(Integer id1, Integer id2) throws NotFound {
-        User user1 = getUser(id1);
-        User user2 = getUser(id2);
+        User user1 = get(id1);
+        User user2 = get(id2);
         return user1.removeFriend(user2) && user2.removeFriend(user1);
     }
 
     @Override
     public Collection<User> getFriends(Integer id) throws NotFound {
-        return getUser(id).getFriends().stream()
+        return get(id).getFriends().stream()
                 .map(i -> {
                     try {
-                        return getUser(i);
+                        return get(i);
                     } catch (NotFound e) {
                         throw new RuntimeException(e);
                     }
@@ -89,11 +89,11 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> getCommonFriends(Integer id1, Integer id2) throws NotFound {
-        Set<Integer> result = new HashSet<>(getUser(id1).getFriends());
-        result.retainAll(getUser(id2).getFriends());
+        Set<Integer> result = new HashSet<>(get(id1).getFriends());
+        result.retainAll(get(id2).getFriends());
         return result.stream().map(currentId -> {
             try {
-                return getUser(currentId);
+                return get(currentId);
             } catch (NotFound e) {
                 throw new RuntimeException(e);
             }

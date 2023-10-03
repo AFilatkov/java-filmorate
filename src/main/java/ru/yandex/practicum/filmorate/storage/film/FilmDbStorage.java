@@ -19,7 +19,6 @@ import java.util.*;
 @Component
 @Qualifier("testFilmDb")
 public class FilmDbStorage implements FilmStorage {
-
     private final JdbcTemplate jdbcTemplate;
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
@@ -46,42 +45,34 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film update(Film film) throws NotFound {
+    public Film update(Film film) throws NotFound, DataAccessException {
         String sqlUpdateFilm = "update films set name=?, description=?, release_date=?, duration=?, rating_id=? where film_id=?";
-        try {
-            int responseCode = jdbcTemplate.update(sqlUpdateFilm,
-                    film.getName(),
-                    film.getDescription(),
-                    film.getReleaseDate(),
-                    film.getDuration(),
-                    film.getMpa().getId(),
-                    film.getId());
-            if (responseCode != 0) {
-                updateFilmGenre(film);
-                Set<Genre> swapGenres = new TreeSet<>(Comparator.comparingInt(Genre::getId));
-                swapGenres.addAll(film.getGenres());
-                film.setGenres(swapGenres);
-                return film;
-            } else {
-                throw new NotFound("Не правильные данные о фильме");
-            }
-        } catch (DataAccessException e) {
-            throw new NotFound("Не правильные данные о фильме");
+        if (jdbcTemplate.update(sqlUpdateFilm,
+                film.getName(),
+                film.getDescription(),
+                film.getReleaseDate(),
+                film.getDuration(),
+                film.getMpa().getId(),
+                film.getId()) != 0) {
+            updateFilmGenre(film);
+            Set<Genre> swapGenres = new TreeSet<>(Comparator.comparingInt(Genre::getId));
+            swapGenres.addAll(film.getGenres());
+            film.setGenres(swapGenres);
+            return film;
+        } else {
+            throw new NotFound("При изменении фильма указаны неправильные данные");
         }
     }
 
     @Override
-    public Film getFilm(Integer id) throws NotFound {
+    public Film get(Integer id) throws NotFound, DataAccessException {
         String sqlGetFilm = "select * from films where film_id=?";
-        try {
-            Film result = jdbcTemplate.queryForObject(sqlGetFilm, (rs, rowNum) -> makeFilm(rs), id);
-            result.setGenres(getFilmGenre(result.getId()));
-            result.getMpa().setName(jdbcTemplate.queryForObject("select name from rating where rating_id=?",
-                    String.class, result.getMpa().getId()));
-            return result;
-        } catch (DataAccessException e) {
-            throw new NotFound("Указан неправильный идентификатор фильма");
-        }
+        Film result = jdbcTemplate.queryForObject(sqlGetFilm, (rs, rowNum) -> makeFilm(rs), id);
+        result.setGenres(getFilmGenre(result.getId()));
+        result.getMpa().setName(jdbcTemplate.queryForObject("select name from rating where rating_id=?",
+                String.class, result.getMpa().getId()));
+        return result;
+
     }
 
     @Override
@@ -98,38 +89,25 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film remove(Film film) throws NotFound {
         String sqlForRemoveFilm = "delete from films where film_id=?";
-        try {
-            jdbcTemplate.update(sqlForRemoveFilm, film.getId());
-            return null;
-        } catch (DataAccessException e) {
-            throw new NotFound("Указан неправильный идентификатор фильма при удалении");
-        }
+        jdbcTemplate.update(sqlForRemoveFilm, film.getId());
+        return null;
     }
 
     @Override
-    public boolean addLike(Integer id, Integer userId) throws NotFound {
+    public boolean addLike(Integer id, Integer userId) throws NotFound, DataAccessException {
         String sqlLikeAdd = "insert into film_likes(film_id, user_id) values(?, ?)";
-        try {
-            jdbcTemplate.update(sqlLikeAdd, id, userId);
+        if (jdbcTemplate.update(sqlLikeAdd, id, userId) != 0) {
             return true;
-        } catch (DataAccessException e) {
+        } else {
             throw new NotFound("При добавлении лайка указаны неправильные идентификаторы");
         }
     }
 
     @Override
-    public boolean removeLike(Integer id, Integer userId) throws NotFound {
+    public boolean removeLike(Integer id, Integer userId) throws NotFound, DataAccessException {
         String sqlRemoveLike = "delete from film_likes where film_id=? and user_id=?";
-        try {
-            int responseCode = jdbcTemplate.update(sqlRemoveLike, id, userId);
-            if (responseCode != 0) {
-                return true;
-            } else {
-                throw new NotFound("При удалении лайка указаны неправильные идентификаторы");
-            }
-        } catch (DataAccessException e) {
-            throw new NotFound("При удалении лайка указаны неправильные идентификаторы");
-        }
+        jdbcTemplate.update(sqlRemoveLike, id, userId);
+        return true;
     }
 
     @Override
