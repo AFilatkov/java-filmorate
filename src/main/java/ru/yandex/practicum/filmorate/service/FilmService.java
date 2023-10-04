@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFound;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -13,18 +15,15 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
+    private static final Logger log = LoggerFactory.getLogger(FilmService.class);
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private static final Logger log = LoggerFactory.getLogger(FilmService.class);
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(@Qualifier("testFilmDb") FilmStorage filmStorage, @Qualifier("testUserDb") UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
@@ -37,22 +36,34 @@ public class FilmService {
         return film;
     }
 
-    public Film getFilm(Integer id) throws NotFound {
-        return filmStorage.getFilm(id);
+    public Film get(Integer id) throws NotFound {
+        try {
+            return filmStorage.get(id);
+        } catch (DataAccessException e) {
+            throw new NotFound("Указан неправильный идентификатор пользователя");
+        }
     }
 
     public Film update(Film film) throws ValidationException, NotFound {
         if (validateFilm(film)) {
-            log.debug("Изменен фильм - {}", film);
-            filmStorage.update(film);
+            try {
+                filmStorage.update(film);
+                log.debug("Изменен фильм - {}", film);
+            } catch (DataAccessException e) {
+                throw new NotFound("Данные о фильме не найдены");
+            }
         }
         return film;
     }
 
     public Film remove(Film film) throws NotFound, ValidationException {
         if (validateFilm(film)) {
-            log.debug("Удаление фильма - {}", film);
-            filmStorage.remove(film);
+            try {
+                filmStorage.remove(film);
+                log.debug("Удаление фильма - {}", film);
+            } catch (DataAccessException e) {
+                throw new NotFound("Указан неправильный идентификатор при удалении фильма");
+            }
         }
         return film;
     }
@@ -61,25 +72,26 @@ public class FilmService {
         return filmStorage.getAll();
     }
 
-    public Film addLike(Integer filmId, Integer userId) throws NotFound {
-        Film film = filmStorage.getFilm(filmId);
-        User user = userStorage.getUser(userId);
-        film.addLike(user);
-        return film;
+    public boolean addLike(Integer filmId, Integer userId) throws NotFound {
+        try {
+            User user = userStorage.get(userId);
+            return filmStorage.addLike(filmId, user.getId());
+        } catch (DataAccessException e) {
+            throw new NotFound("При добавлении лайка указаны неправильные идентификаторы");
+        }
     }
 
-    public Film removeLike(Integer filmId, Integer userId) throws NotFound {
-        Film film = filmStorage.getFilm(filmId);
-        User user = userStorage.getUser(userId);
-        film.removeLike(user);
-        return film;
+    public boolean removeLike(Integer filmId, Integer userId) throws NotFound {
+        try {
+            User user = userStorage.get(userId);
+            return filmStorage.removeLike(filmId, user.getId());
+        } catch (DataAccessException e) {
+            throw new NotFound("При удалении лайка указаны неправильные идентификаторы");
+        }
     }
 
-    public List<Film> getMostPopularFilms(Integer count) {
-        return filmStorage.getAll().stream()
-                .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
+    public Collection<Film> getMostPopularFilms(Integer count) {
+        return filmStorage.getMostPopularFilms(count);
     }
 
     private boolean validateFilm(Film film) throws ValidationException {

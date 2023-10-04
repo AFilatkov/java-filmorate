@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFound;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -10,8 +12,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
 
 @Service
 public class UserService {
@@ -19,11 +20,11 @@ public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("testUserDb") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
-    public User add(User user) throws ValidationException {
+    public User add(User user) throws ValidationException, NotFound {
         if (validateUser(user)) {
             log.debug("Добавление пользователя - {}", user);
             return userStorage.add(user);
@@ -32,18 +33,26 @@ public class UserService {
         }
     }
 
-    public Collection<User> getAll() {
+    public Collection<User> getAll() throws NotFound {
         return userStorage.getAll();
     }
 
-    public User getUser(Integer id) throws NotFound {
-        return userStorage.getUser(id);
+    public User get(Integer id) throws NotFound {
+        try {
+            return userStorage.get(id);
+        } catch (DataAccessException e) {
+            throw new NotFound("Указан неправильный идентификатор пользователя при получении пользователя");
+        }
     }
 
     public User remove(User user) throws NotFound, ValidationException {
         if (validateUser(user)) {
-            log.debug("Удаление фильма - {}", user);
-            return userStorage.remove(user);
+            try {
+                log.debug("Удаление пользователя - {}", user);
+                return userStorage.remove(user);
+            } catch (DataAccessException e) {
+                throw new NotFound("Пользователь при удалении не найден");
+            }
         } else {
             throw new ValidationException("Введены неверные данные пользователя");
         }
@@ -51,51 +60,47 @@ public class UserService {
 
     public User update(User user) throws NotFound, ValidationException {
         if (validateUser(user)) {
-            log.debug("Изменение пользователя - {}", user);
-            return userStorage.update(user);
+            try {
+                log.debug("Изменение пользователя - {}", user);
+                return userStorage.update(user);
+            } catch (DataAccessException e) {
+                throw new NotFound("Данные о пользователе не найдены");
+            }
         } else {
             throw new ValidationException("Введены неверные данные пользователя");
         }
     }
 
     public boolean addFriend(Integer id1, Integer id2) throws NotFound {
-        boolean result = true;
-        User user1 = userStorage.getUser(id1);
-        User user2 = userStorage.getUser(id2);
-        user1.addFriend(user2);
-        user2.addFriend(user1);
-
-        return result;
+        try {
+            return userStorage.addFriend(id1, id2);
+        } catch (DataAccessException e) {
+            throw new NotFound("Указаны неправильные идентификаторы при добалении друзей");
+        }
     }
 
     public boolean removeFriend(Integer id1, Integer id2) throws NotFound {
-        User user1 = userStorage.getUser(id1);
-        User user2 = userStorage.getUser(id2);
-        return user1.removeFriend(user2) && user2.removeFriend(user1);
+        try {
+            return userStorage.removeFriend(id1, id2);
+        } catch (DataAccessException e) {
+            throw new NotFound("При удалении друзей указаны неправильные идентификаторы");
+        }
     }
 
-    public List<User> getFriends(Integer userId) throws NotFound {
-        return userStorage.getUser(userId).getFriends().stream()
-                .map(i -> {
-                    try {
-                        return userStorage.getUser(i);
-                    } catch (NotFound e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .collect(Collectors.toList());
+    public Collection<User> getFriends(Integer userId) throws NotFound {
+        try {
+            return userStorage.getFriends(userId);
+        } catch (DataAccessException e) {
+            throw new NotFound("При получении списка друзей указан неправильный идентификатор");
+        }
     }
 
-    public List<User> commonFriends(Integer id1, Integer id2) throws NotFound {
-        Set<Integer> result = new HashSet<>(userStorage.getUser(id1).getFriends());
-        result.retainAll(userStorage.getUser(id2).getFriends());
-        return result.stream().map(currentId -> {
-            try {
-                return userStorage.getUser(currentId);
-            } catch (NotFound e) {
-                throw new RuntimeException(e);
-            }
-        }).collect(Collectors.toList());
+    public Collection<User> commonFriends(Integer id1, Integer id2) throws NotFound {
+        try {
+            return userStorage.getCommonFriends(id1, id2);
+        } catch (DataAccessException e) {
+            throw new NotFound("При получении списка общих друзей указаны неправильные идентификаторы");
+        }
     }
 
     private boolean validateUser(User user) throws ValidationException {

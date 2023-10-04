@@ -23,12 +23,12 @@ public class UserController {
     }
 
     @GetMapping
-    public Collection<User> getUsers() {
+    public Collection<User> getUsers() throws NotFound {
         return userService.getAll();
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) throws ValidationException {
+    public User createUser(@RequestBody User user) throws ValidationException, NotFound {
         return userService.add(user);
     }
 
@@ -39,7 +39,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public User getUser(@PathVariable Integer id) throws NotFound {
-        return userService.getUser(id);
+        return userService.get(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -53,12 +53,12 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getFriends(@PathVariable Integer id) throws NotFound {
+    public Collection<User> getFriends(@PathVariable Integer id) throws NotFound {
         return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) throws NotFound {
+    public Collection<User> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) throws NotFound {
         return userService.commonFriends(id, otherId);
     }
 
